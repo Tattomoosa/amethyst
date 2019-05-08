@@ -7,6 +7,7 @@ use derivative::Derivative;
 use log::{debug, info, log_enabled, trace, Level};
 use rayon::ThreadPoolBuilder;
 use winit::Event;
+use sentry::integrations::panic::register_panic_handler;
 
 #[cfg(feature = "profiler")]
 use thread_profiler::{profile_scope, register_thread_with_profiler, write_profile};
@@ -220,6 +221,7 @@ where
     where
         for<'b> R: EventReader<'b, Event = E>,
     {
+        register_panic_handler();
         self.initialize();
         self.world.write_resource::<Stopwatch>().start();
         while self.states.is_running() {
@@ -480,6 +482,8 @@ where
         info!("Version: {}", env!("CARGO_PKG_VERSION"));
         info!("Platform: {}", env!("VERGEN_TARGET_TRIPLE"));
         info!("Amethyst git commit: {}", env!("VERGEN_SHA"));
+        info!("Sentry DSN: {}", env!("SENTRY_DSN"));
+
         let rustc_meta = rustc_version_runtime::version_meta();
         info!(
             "Rustc version: {} {:?}",
